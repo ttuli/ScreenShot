@@ -23,11 +23,6 @@ SettingDia::SettingDia(QWidget *parent,QString savePos)
     QMetaObject::invokeMethod(rootobject,"initSetting",Q_ARG(QVariant,savePos));
 }
 
-SettingDia *SettingDia::getInstance(QString savePos)
-{
-    static SettingDia *object=new SettingDia(0,savePos);
-    return object;
-}
 
 void SettingDia::ChangeSavePath()
 {

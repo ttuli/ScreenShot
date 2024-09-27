@@ -11,14 +11,14 @@ class SettingDia : public QDialog
 public:
     explicit SettingDia(QWidget *parent = nullptr,QString savePos="");
 
-    static SettingDia *getInstance(QString savePos);
-
 private:
     QQuickWidget *qwid;
 
     QObject *rootobject=nullptr;
 
     QString fileSavePosition;
+
+    static SettingDia *object;
 
 private slots:
     void ChangeSavePath();

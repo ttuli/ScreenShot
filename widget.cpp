@@ -203,11 +203,16 @@ void Widget::initAll()
     QAction *action3=new QAction("彻底退出");
 
     connect(action2,&QAction::triggered,[=]{
-        SettingDia::getInstance(fileSavePath)->exec();
-        connect(SettingDia::getInstance(fileSavePath),&SettingDia::pathChange,[=](QString path){
+        if(settingdia==nullptr)
+        {
+            settingdia=new SettingDia(this,fileSavePath);
+            settingdia->exec();
+        }
+        connect(settingdia,&SettingDia::pathChange,[=](QString path){
             QSettings setting("initialFile.ini");
             setting.setValue("path",path);
         });
+        settingdia->raise();
     });
 
     connect(action3,&QAction::triggered,[=]{
