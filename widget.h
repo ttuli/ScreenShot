@@ -27,8 +27,6 @@ public:
 private:
     int ScreenWidth,ScreenHeight;
 
-    QPixmap *fullScreen;
-
     CaptureRec *son=nullptr;
 
     SettingDia *settingdia=nullptr;

@@ -12,18 +12,15 @@ Widget::Widget(QWidget *parent)
     ScreenWidth=QGuiApplication::primaryScreen()->size().width();
     ScreenHeight=QGuiApplication::primaryScreen()->size().height();
 
-    setWindowFlags(Qt::FramelessWindowHint|Qt::SubWindow);
+    setWindowFlags(Qt::FramelessWindowHint|Qt::SubWindow|Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_StyledBackground);
-    showFullScreen();
-    fullScreen=new QPixmap(ScreenWidth,ScreenHeight);
-    fullScreen->fill(QColor(0,0,0,80));
 
     initNotPaint=true;
 
-    initAll();
-
     QApplication::instance()->installEventFilter(this);
+
+    initAll();
 }
 
 Widget::~Widget()
@@ -69,12 +66,12 @@ void Widget::paintEvent(QPaintEvent *event)
 {
     if(initNotPaint)return;
     QPainter painter(this);
-    painter.drawPixmap(0,0,width(),height(),*fullScreen);
+    painter.fillRect(0,0,width(),height(),QColor(0,0,0,100));
     if(DrawRec)
     {
         DrawRec=false;
         painter.save();
-        painter.setBrush(QColor(0,0,0,1));
+        painter.setBrush(QColor(0,0,0,5));
         painter.setPen(Qt::transparent);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOut);
         painter.drawRect(son->geometry());
@@ -203,15 +200,17 @@ void Widget::initAll()
     QAction *action3=new QAction("彻底退出");
 
     connect(action2,&QAction::triggered,[=]{
-        if(settingdia==nullptr)
+        if(settingdia!=nullptr)
         {
-            settingdia=new SettingDia(this,fileSavePath);
-            settingdia->exec();
+            settingdia->deleteLater();
         }
+        settingdia=new SettingDia(this,fileSavePath);
         connect(settingdia,&SettingDia::pathChange,[=](QString path){
             QSettings setting("initialFile.ini");
             setting.setValue("path",path);
+            fileSavePath=path;
         });
+        settingdia->exec();
         settingdia->raise();
     });
 
@@ -241,8 +240,9 @@ void Widget::initAll()
     });
 
     QFile file("initialFile.ini");
-    file.open(QIODevice::WriteOnly);
+    file.open(QIODevice::Append);
     file.close();
     QSettings setting("initialFile.ini");
     fileSavePath=setting.value("path").toString();
+
 }
