@@ -160,13 +160,16 @@ void Widget::catchZoom(bool getFullScreen)
     QString currentDate=QDate::currentDate().toString().replace(" ","_");
     int num=1;
     QString filename=currentDate+"1";
-    while(QFile::exists(filename+".png"))
+
+    while(QFile::exists(fileSavePath+"/"+filename+".png"))
     {
         num++;
         filename=currentDate+QString::number(num);
     }
     filename+=".png";
-    filename=fileSavePath+"/"+filename;;
+    filename=fileSavePath+"/"+filename;
+    qDebug()<<filename;
+
     if(!getFullScreen)
     {
         QPixmap pix=QApplication::primaryScreen()->grabWindow(0,son->x(),son->y(),son->width(),son->height());
