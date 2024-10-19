@@ -166,15 +166,19 @@ void Widget::catchZoom(bool getFullScreen)
         filename=currentDate+QString::number(num);
     }
     filename+=".png";
-    filename=fileSavePath+"/"+filename;
+    filename=fileSavePath+"/"+filename;;
     if(!getFullScreen)
     {
-        QApplication::primaryScreen()->grabWindow(0,son->x(),son->y(),son->width(),son->height()).save(filename,"png");
+        QPixmap pix=QApplication::primaryScreen()->grabWindow(0,son->x(),son->y(),son->width(),son->height());
+        pix.save(filename,"png");
+        QGuiApplication::clipboard()->setPixmap(pix);
     }
     else
     {
         hide();
-        QApplication::primaryScreen()->grabWindow().save(filename,"png");
+        QPixmap pix=QApplication::primaryScreen()->grabWindow();
+        pix.save(filename,"png");
+        QGuiApplication::clipboard()->setPixmap(pix);
     }
     hide();
 }
@@ -222,7 +226,6 @@ void Widget::initAll()
             son->deleteLater();
         son=nullptr;
         initNotPaint=false;
-        show();
         showFullScreen();
     });
 

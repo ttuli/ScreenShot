@@ -15,6 +15,8 @@
 #include <QFile>
 #include <windows.h>
 #include <windowsx.h>
+#include <QMimeData>
+#include <QClipboard>
 #include "capturerec.h"
 #include "settingdia.h"
 
