@@ -13,6 +13,8 @@
 #include <QSystemTrayIcon>
 #include <QSettings>
 #include <QFile>
+#include <windows.h>
+#include <windowsx.h>
 #include "capturerec.h"
 #include "settingdia.h"
 
@@ -58,7 +60,7 @@ protected:
 
     void mouseReleaseEvent(QMouseEvent *event);
 
-    bool eventFilter(QObject *watched, QEvent *event);
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result);
 
 private:
     void catchZoom(bool getFullScreen);

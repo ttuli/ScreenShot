@@ -29,6 +29,8 @@ void CaptureRec::mouseMoveEvent(QMouseEvent *event)
         if((wp+delta).x()+width()>ScreenWidth||(wp+delta).y()+height()>ScreenHeight)
         {
             move(qMin(ScreenWidth-width(),qMax(0,(wp+delta).x())),qMin(ScreenHeight-height(),qMax(0,(wp+delta).y())));
+            wp=pos();
+            p=event->globalPosition().toPoint();
         }
     }
 }

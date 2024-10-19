@@ -18,9 +18,10 @@ Widget::Widget(QWidget *parent)
 
     initNotPaint=true;
 
-    QApplication::instance()->installEventFilter(this);
-
     initAll();
+
+    HWND hwnd=(HWND)this->winId();
+    RegisterHotKey(hwnd,1,MOD_ALT,0x43);
 }
 
 Widget::~Widget()
@@ -28,39 +29,6 @@ Widget::~Widget()
 
 }
 
-bool Widget::eventFilter(QObject *watched, QEvent *event)
-{
-
-    if(event->type()==QEvent::KeyPress)
-    {
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-
-        if (keyEvent->key() == Qt::Key_Control)
-        {
-            controlPressed = true;
-        }
-        if(keyEvent->key()==Qt::Key_Y&&controlPressed)
-        {
-            if(!hasPressForOnce)
-            {
-                hasPressForOnce=true;
-                qDebug()<<"control Y";
-            }
-        }
-    }
-    else if(event->type()==QEvent::KeyRelease)
-    {
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-
-        if (keyEvent->key() == Qt::Key_Control)
-        {
-            controlPressed = false;
-            hasPressForOnce=false;
-        }
-    }
-
-    return QWidget::eventFilter(watched,event);
-}
 
 void Widget::paintEvent(QPaintEvent *event)
 {
@@ -167,6 +135,25 @@ void Widget::mouseReleaseEvent(QMouseEvent *event)
 {
     isleft=false;
 }
+
+bool Widget::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
+{
+    if (eventType == "windows_generic_MSG")
+    {
+        MSG* msg = static_cast<MSG*>(message);
+        if (msg->message == WM_HOTKEY)
+        {
+            int hotkeyId = msg->wParam;
+            if (hotkeyId == 1)
+            {
+                systemicon->activated(QSystemTrayIcon::Trigger);
+            }
+            return true;  // 事件已处理
+        }
+    }
+    return false;
+}
+
 
 void Widget::catchZoom(bool getFullScreen)
 {
