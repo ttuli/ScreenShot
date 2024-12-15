@@ -10,6 +10,8 @@ CaptureRec::CaptureRec(QWidget *parent,int ScreenW,int ScreenH)
 
     currentChoice=CHOICE_CURSOR;
     pix=new QPixmap();
+
+    colorDia=new ColorSelectionInterface(parent);
 }
 
 void CaptureRec::setCurrentChoice(int choice)

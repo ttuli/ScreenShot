@@ -58,6 +58,7 @@ private:
 
     QQuickWidget *toolMenu=nullptr;
 
+
     QQuickItem *toolMenu_item=nullptr;
 
     int currentChoice;

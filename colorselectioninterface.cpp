@@ -14,7 +14,7 @@ ColorSelectionInterface::ColorSelectionInterface(QWidget *parent)
     size1->setFixedSize(5,5);
     size2->setStyleSheet("background-color:black;border-radius:5px;");
     size2->setFixedSize(10,10);
-    size3->setStyleSheet("background-color:black;border-radius:7px;");
+    size3->setStyleSheet("background-color:black;border-radius:7px;border:2px solid red;");
     size3->setFixedSize(15,15);
 
     qhb->addWidget(size1);

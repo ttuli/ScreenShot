@@ -8,6 +8,7 @@
 #include <QGuiApplication>
 #include <Qpainter>
 #include <QPaintEvent>
+#include "colorselectioninterface.h"
 
 #define CHOICE_CURSOR 0
 #define CHOICE_LINE CHOICE_CURSOR+1
@@ -58,6 +59,8 @@ private:
     QPixmap currentPix;
     QPixmap *pix;
     QPixmap pix_copy;
+
+    ColorSelectionInterface *colorDia=nullptr;
 
 signals:
     void moveSig();
