@@ -2,5 +2,13 @@
     <qresource prefix="/new/prefix1">
         <file>res/Scissors.svg</file>
         <file>res/PencilSquare.svg</file>
+        <file>res/draw.svg</file>
+        <file>res/line.svg</file>
+        <file>res/pin.svg</file>
+        <file>res/save.svg</file>
+        <file>res/text.svg</file>
+        <file>res/cursor.svg</file>
+        <file>res/colorChoice.svg</file>
+        <file>res/ArrorUp.svg</file>
     </qresource>
 </RCC>

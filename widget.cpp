@@ -18,6 +18,8 @@ Widget::Widget(QWidget *parent)
 
     initNotPaint=true;
 
+    currentChoice=0;
+
     initAll();
 
     HWND hwnd=(HWND)this->winId();
@@ -26,9 +28,27 @@ Widget::Widget(QWidget *parent)
 
 Widget::~Widget()
 {
-
+    for(int i=0;i<windowList.size();i++)
+    {
+        if(windowList.at(i)!=nullptr)
+        windowList.at(i)->deleteLater();
+    }
+    windowList.clear();
 }
 
+void Widget::createWindow()
+{
+    SuspendWindow *w=new SuspendWindow(0,QApplication::primaryScreen()->grabWindow(0,son->x(),son->y(),son->width(),son->height()));
+    w->move(son->pos());
+    w->show();
+    windowList<<w;
+
+    if(son!=nullptr)
+        son->deleteLater();
+    son=nullptr;
+    toolMenu->hide();
+    hide();
+}
 
 void Widget::paintEvent(QPaintEvent *event)
 {
@@ -69,9 +89,10 @@ void Widget::contextMenuEvent(QContextMenuEvent *event)
 
     connect(action3,&QAction::triggered,[=]{
         DrawRec=false;
-        if(son!=nullptr)
         son->deleteLater();
         son=nullptr;
+        toolMenu->hide();
+        QMetaObject::invokeMethod(toolMenu_item,"initCurrentState");
         update();
     });
 
@@ -79,6 +100,7 @@ void Widget::contextMenuEvent(QContextMenuEvent *event)
         if(son!=nullptr)
         son->deleteLater();
         son=nullptr;
+        toolMenu->hide();
         hide();
     });
 
@@ -89,20 +111,51 @@ void Widget::mousePressEvent(QMouseEvent *event)
 {
     if(event->button()==Qt::LeftButton)
     {
-        isleft=true;
-        p=event->globalPosition().toPoint();
-        if(son)
+        if(son!=nullptr)
         {
+            if(son->currentChoice!=CHOICE_CURSOR)
+            {
+                return;
+            }
             son->deleteLater();
             son=nullptr;
         }
+
+        isleft=true;
+        p=event->globalPosition().toPoint();
+        toolMenu->hide();
+
+        QMetaObject::invokeMethod(toolMenu_item,"initCurrentState");
+
         son=new CaptureRec(this,ScreenWidth,ScreenHeight);
         son->setVisible(1);
+        son->resize(0,0);
         son->move(p);
         connect(son,&CaptureRec::moveSig,[=]{
+            toolMenu->hide();
             DrawRec=true;
             update();
         });
+        connect(son,&CaptureRec::releaseSig,[=]{
+            if(son->y()+son->height()+5+toolMenu->height()<ScreenHeight)
+                toolMenu->move(son->x(),son->y()+son->height()+5);
+            else if(son->y()-5-toolMenu->height()>0)
+            {
+                toolMenu->move(son->x(),son->y()-toolMenu->height()-5);
+            }
+            else
+            {
+                toolMenu->move(son->x(),son->y()+son->height()-5-toolMenu->height());
+            }
+            toolMenu->show();
+        });
+        connect(son,&CaptureRec::updateSig,[=]{
+            DrawRec=true;
+            update();
+        });
+        connect(toolMenu_item,SIGNAL(choiceSig(int)),son,SLOT(setCurrentChoice(int)));
+        connect(toolMenu_item,SIGNAL(pinSig()),this,SLOT(createWindow()));
+
         DrawRec=false;
         update();
     }
@@ -114,6 +167,7 @@ void Widget::mouseMoveEvent(QMouseEvent *event)
     {
         QPoint CurrentPos=event->globalPosition().toPoint();
         son->resize(qAbs(CurrentPos.x()-p.x()),qAbs(CurrentPos.y()-p.y()));
+        sonRect=son->geometry();
         if(CurrentPos.x()<p.x()&&CurrentPos.y()>p.y())
         {
             son->move(CurrentPos.x(),p.y());
@@ -133,7 +187,20 @@ void Widget::mouseMoveEvent(QMouseEvent *event)
 
 void Widget::mouseReleaseEvent(QMouseEvent *event)
 {
+    if(!isleft)return;
     isleft=false;
+    if(son->y()+son->height()+5+toolMenu->height()<ScreenHeight)
+        toolMenu->move(son->x(),son->y()+son->height()+5);
+    else if(son->y()-5-toolMenu->height()>0)
+    {
+        toolMenu->move(son->x(),son->y()-toolMenu->height()-5);
+    }
+    else
+    {
+        toolMenu->move(son->x(),son->y()+son->height()-5-toolMenu->height());
+    }
+    toolMenu->show();
+    toolMenu->raise();
 }
 
 bool Widget::nativeEvent(const QByteArray &eventType, void *message, qintptr *result)
@@ -157,6 +224,7 @@ bool Widget::nativeEvent(const QByteArray &eventType, void *message, qintptr *re
 
 void Widget::catchZoom(bool getFullScreen)
 {
+    if(son==nullptr||son->isHidden()||son->width()<=5)return;
     QString currentDate=QDate::currentDate().toString().replace(" ","_");
     int num=1;
     QString filename=currentDate+"1";
@@ -168,7 +236,6 @@ void Widget::catchZoom(bool getFullScreen)
     }
     filename+=".png";
     filename=fileSavePath+"/"+filename;
-    qDebug()<<filename;
 
     if(!getFullScreen)
     {
@@ -188,6 +255,14 @@ void Widget::catchZoom(bool getFullScreen)
 
 void Widget::initAll()
 {
+    toolMenu=new QQuickWidget(this);
+    toolMenu->setClearColor(Qt::transparent);
+    toolMenu->setAttribute(Qt::WA_AlwaysStackOnTop);
+    toolMenu->setResizeMode(QQuickWidget::SizeViewToRootObject);
+    toolMenu->setSource(QUrl("qrc:/ToolMenu.qml"));
+    toolMenu->hide();
+    toolMenu_item=toolMenu->rootObject();
+
     QMenu *systemMenu=new QMenu(this);
     QAction *action1=new QAction("截图");
     QAction *action2=new QAction("设置");
@@ -239,3 +314,4 @@ void Widget::initAll()
     fileSavePath=setting.value("path").toString();
 
 }
+

@@ -10,13 +10,17 @@ CONFIG += c++17
 
 SOURCES += \
     capturerec.cpp \
+    colorselectioninterface.cpp \
     main.cpp \
     settingdia.cpp \
+    suspendwindow.cpp \
     widget.cpp
 
 HEADERS += \
     capturerec.h \
+    colorselectioninterface.h \
     settingdia.h \
+    suspendwindow.h \
     widget.h
 
 # Default rules for deployment.

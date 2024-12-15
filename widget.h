@@ -2,13 +2,12 @@
 #define WIDGET_H
 
 #include <QWidget>
-#include <QGuiApplication>
-#include <QPaintEvent>
 #include <QScreen>
 #include <QPixmap>
-#include <Qpainter>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QQuickWidget>
+#include <QQuickItem>
 #include <QKeyEvent>
 #include <QSystemTrayIcon>
 #include <QSettings>
@@ -19,6 +18,8 @@
 #include <QClipboard>
 #include "capturerec.h"
 #include "settingdia.h"
+#include "suspendwindow.h"
+
 
 class Widget : public QWidget
 {
@@ -28,10 +29,14 @@ public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
 
+public slots:
+    void createWindow();
+
 private:
     int ScreenWidth,ScreenHeight;
 
     CaptureRec *son=nullptr;
+    QRect sonRect;
 
     SettingDia *settingdia=nullptr;
 
@@ -50,6 +55,15 @@ private:
     bool hasPressForOnce=false;
 
     QString fileSavePath;
+
+    QQuickWidget *toolMenu=nullptr;
+
+    QQuickItem *toolMenu_item=nullptr;
+
+    int currentChoice;
+    QPoint currentP,preP;
+
+    QList<SuspendWindow*> windowList;
 
 protected:
     void paintEvent(QPaintEvent *event);
@@ -70,5 +84,6 @@ private:
     void initAll();
 
     int n=0;
+
 };
 #endif // WIDGET_H
