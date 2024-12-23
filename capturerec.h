@@ -8,11 +8,18 @@
 #include <QGuiApplication>
 #include <Qpainter>
 #include <QPaintEvent>
-#include "colorselectioninterface.h"
+#include "textwidget.h"
 
 #define CHOICE_CURSOR 0
 #define CHOICE_LINE CHOICE_CURSOR+1
 #define CHOICE_DRAW CHOICE_CURSOR+2
+#define CHOICE_TEXT CHOICE_CURSOR+3
+
+extern QColor currentLineColor;
+extern QColor currentDrawColor;
+extern int currentDrawWidth;
+extern int currentLineWidth;
+extern int currentChoice;
 
 class CaptureRec : public QWidget
 {
@@ -20,7 +27,8 @@ class CaptureRec : public QWidget
 public:
     explicit CaptureRec(QWidget *parent = nullptr,int ScreenW=0,int ScreenH=0);
 
-    int currentChoice;
+    ~CaptureRec();
+
 
 public slots:
     void setCurrentChoice(int choice);
@@ -60,7 +68,7 @@ private:
     QPixmap *pix;
     QPixmap pix_copy;
 
-    ColorSelectionInterface *colorDia=nullptr;
+    QList<TextWidget*> textlist;
 
 signals:
     void moveSig();
@@ -68,6 +76,8 @@ signals:
     void releaseSig();
 
     void updateSig();
+
+    void colorInterfaceSig();
 };
 
 #endif // CAPTUREREC_H

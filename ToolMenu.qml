@@ -13,13 +13,12 @@ Rectangle
     property int cursorChoice:0;
     property int lineChoice: cursorChoice+1;
     property int drawChoice: cursorChoice+2;
+    property int textChoice: cursorChoice+3;
 
     signal choiceSig(int choice);
-    signal saveSig();
-    signal textSig();
     signal pinSig();
 
-    width: btnlength*6+20+5*5;
+    width: btnlength*5+20+4*5;
     height: btnlength+20;
 
     function getCurrentState()
@@ -29,12 +28,16 @@ Rectangle
     function initCurrentState()
     {
         cursorbtn.isChosed=true;
-        cursorbtn.color=cursorbtn.isChosed?"#DCDCDC":"white";
+        cursorbtn.color="#DCDCDC";
 
         linebtn.isChosed=false;
         linebtn.color="white";
+
         drawbtn.isChosed=false;
         drawbtn.color="white";
+
+        textbtn.isChosed=false;
+        textbtn.color="white";
     }
 
     Row
@@ -43,7 +46,7 @@ Rectangle
         spacing: 5;
         anchors.fill: parent;
         anchors.margins: 10;
-        width: btnlength*6+5*5;
+        width: btnlength*5+4*5;
         height: btnlength;
         Rectangle
         {
@@ -67,12 +70,16 @@ Rectangle
                 onClicked:
                 {
                     parent.isChosed=true;
-                    parent.color=parent.isChosed?"#DCDCDC":"white";
+                    parent.color="#DCDCDC";
 
                     linebtn.isChosed=false;
                     linebtn.color="white";
+
                     drawbtn.isChosed=false;
                     drawbtn.color="white";
+
+                    textbtn.isChosed=false;
+                    textbtn.color="white";
 
                     choiceSig(cursorChoice);
                 }
@@ -110,13 +117,16 @@ Rectangle
                 onClicked:
                 {
                     parent.isChosed=true;
-                    parent.color=parent.isChosed?"#DCDCDC":"white";
+                    parent.color="#DCDCDC";
 
                     linebtn.isChosed=false;
                     linebtn.color="white";
 
                     cursorbtn.isChosed=false;
                     cursorbtn.color="white";
+
+                    textbtn.isChosed=false;
+                    textbtn.color="white";
 
                     choiceSig(drawChoice);
                 }
@@ -154,13 +164,16 @@ Rectangle
                 onClicked:
                 {
                     parent.isChosed=true;
-                    parent.color=parent.isChosed?"#DCDCDC":"white";
+                    parent.color="#DCDCDC";
 
                     drawbtn.isChosed=false;
                     drawbtn.color="white";
 
                     cursorbtn.isChosed=false;
                     cursorbtn.color="white";
+
+                    textbtn.isChosed=false;
+                    textbtn.color="white";
 
                     choiceSig(lineChoice);
                 }
@@ -199,17 +212,20 @@ Rectangle
                 hoverEnabled: true;
                 onClicked:
                 {
+                    parent.isChosed=true;
+                    parent.color="#DCDCDC";
 
-                }
-                onPressed:
-                {
-                    parent.color="#DCDCDC"
-                }
-                onReleased:
-                {
-                    parent.color="white";
-                }
+                    drawbtn.isChosed=false;
+                    drawbtn.color="white";
 
+                    cursorbtn.isChosed=false;
+                    cursorbtn.color="white";
+
+                    linebtn.isChosed=false;
+                    linebtn.color="white";
+
+                    choiceSig(textChoice);
+                }
                 onEntered:
                 {
                     if(!parent.isChosed)
@@ -244,50 +260,6 @@ Rectangle
                 onClicked:
                 {
                     pinSig();
-                }
-                onPressed:
-                {
-                    parent.color="#DCDCDC"
-                }
-                onReleased:
-                {
-                    parent.color="white";
-                }
-
-                onEntered:
-                {
-                    if(!parent.isChosed)
-                    parent.color="#F5F5F5"
-                }
-                onExited:
-                {
-                    if(!parent.isChosed)
-                        parent.color="white";
-                }
-            }
-        }
-        Rectangle
-        {
-            id:savebtn;
-            width: btnlength;
-            height: btnlength;
-            color:"white";
-            radius: 10;
-
-            property bool isChosed: false;
-
-            Image
-            {
-                anchors.fill: parent;
-                source: "/new/prefix1/res/save.svg"
-            }
-            MouseArea
-            {
-                anchors.fill: parent;
-                hoverEnabled: true;
-                onClicked:
-                {
-
                 }
                 onPressed:
                 {

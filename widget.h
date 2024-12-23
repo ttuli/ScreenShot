@@ -4,7 +4,6 @@
 #include <QWidget>
 #include <QScreen>
 #include <QPixmap>
-#include <QMenu>
 #include <QMouseEvent>
 #include <QQuickWidget>
 #include <QQuickItem>
@@ -20,6 +19,9 @@
 #include "settingdia.h"
 #include "suspendwindow.h"
 
+#define LINE 0
+#define DRAW 1
+
 
 class Widget : public QWidget
 {
@@ -32,6 +34,12 @@ public:
 public slots:
     void createWindow();
 
+    void createText();
+
+    void setPenColor(int type,QColor color);
+
+    void setPenWidth(int type,int width);
+
 private:
     int ScreenWidth,ScreenHeight;
 
@@ -43,12 +51,10 @@ private:
     QPoint p;
 
     bool isleft=false;
-
     bool DrawRec=false;
-
     bool initNotPaint=true;
-
     bool controlPressed=false;
+    bool texting=false;
 
     QSystemTrayIcon *systemicon=nullptr;
 
@@ -57,11 +63,14 @@ private:
     QString fileSavePath;
 
     QQuickWidget *toolMenu=nullptr;
-
+    QQuickWidget *lineColorMenu=nullptr;
+    QQuickWidget *drawColorMenu=nullptr;
 
     QQuickItem *toolMenu_item=nullptr;
+    QQuickItem *lineColorMenu_item=nullptr;
+    QQuickItem *drawColorMenu_item=nullptr;
 
-    int currentChoice;
+    //int currentChoice;
     QPoint currentP,preP;
 
     QList<SuspendWindow*> windowList;
@@ -85,6 +94,9 @@ private:
     void initAll();
 
     int n=0;
+
+signals:
+    void textSig();
 
 };
 #endif // WIDGET_H

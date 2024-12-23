@@ -3,5 +3,6 @@
     <qresource prefix="/">
         <file>SettingDialog.qml</file>
         <file>ToolMenu.qml</file>
+        <file>ColorSelectionInterface.qml</file>
     </qresource>
 </RCC>

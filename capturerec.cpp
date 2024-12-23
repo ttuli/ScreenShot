@@ -1,5 +1,11 @@
 #include "capturerec.h"
 
+QColor currentLineColor;
+QColor currentDrawColor;
+int currentDrawWidth;
+int currentLineWidth;
+int currentChoice;
+
 CaptureRec::CaptureRec(QWidget *parent,int ScreenW,int ScreenH)
     : QWidget{parent}
 {
@@ -10,13 +16,19 @@ CaptureRec::CaptureRec(QWidget *parent,int ScreenW,int ScreenH)
 
     currentChoice=CHOICE_CURSOR;
     pix=new QPixmap();
-
-    colorDia=new ColorSelectionInterface(parent);
 }
+
+CaptureRec::~CaptureRec()
+{
+    for(int i=0;i<textlist.size();i++)
+        textlist.at(i)->deleteLater();
+}
+
 
 void CaptureRec::setCurrentChoice(int choice)
 {
     currentChoice=choice;
+    emit colorInterfaceSig();
     if(choice==CHOICE_CURSOR)
     {
         if(!hasDraw)
@@ -47,10 +59,6 @@ void CaptureRec::setCurrentChoice(int choice)
             currentPix=QGuiApplication::primaryScreen()->grabWindow(0,x(),y(),width(),height());
             pix=&currentPix;
 
-            // QPainter painter;
-            // painter.begin(pix);
-            // painter.drawPixmap(0,0,width(),height(),*pix);
-            // painter.end();
             update();
         }
     }
@@ -72,6 +80,15 @@ void CaptureRec::mousePressEvent(QMouseEvent *event)
         return;
     }
 
+    if(currentChoice==CHOICE_TEXT)
+    {
+        TextWidget *twid=new TextWidget;
+        textlist<<twid;
+        twid->show();
+        twid->move(event->pos());
+        return;
+    }
+
     if(event->button()==Qt::LeftButton&&!hasDraw)
     {
         isleft=true;
@@ -90,8 +107,8 @@ void CaptureRec::mouseMoveEvent(QMouseEvent *event)
         QPainter painter;
         painter.begin(pix);
         QPen pen;
-        pen.setWidth(2);
-        pen.setColor(Qt::green);
+        pen.setWidth(currentDrawWidth);
+        pen.setColor(currentDrawColor);
         painter.setPen(pen);
         painter.drawLine(preP,currentP);
         painter.end();
@@ -104,8 +121,8 @@ void CaptureRec::mouseMoveEvent(QMouseEvent *event)
         hasDraw=true;
         QPainter painter;
         QPen pen;
-        pen.setWidth(2);
-        pen.setColor(Qt::green);
+        pen.setWidth(currentLineWidth);
+        pen.setColor(currentLineColor);
         painter.begin(pix);
         painter.setPen(pen);
         painter.drawLine(startP,event->pos());

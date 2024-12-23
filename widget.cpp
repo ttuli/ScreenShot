@@ -38,8 +38,8 @@ Widget::~Widget()
 
 void Widget::createWindow()
 {
-    SuspendWindow *w=new SuspendWindow(0,QApplication::primaryScreen()->grabWindow(0,son->x(),son->y(),son->width(),son->height()));
-    w->move(son->pos());
+    SuspendWindow *w=new SuspendWindow(0,QApplication::primaryScreen()->grabWindow(0,son->x(),son->y(),son->width(),son->height()),fileSavePath);
+    w->move(son->x()-3,son->y()-3);
     w->show();
     windowList<<w;
 
@@ -47,8 +47,41 @@ void Widget::createWindow()
         son->deleteLater();
     son=nullptr;
     toolMenu->hide();
+    lineColorMenu->hide();
+    drawColorMenu->hide();
     hide();
 }
+
+void Widget::createText()
+{
+    texting=true;
+}
+
+void Widget::setPenColor(int type, QColor color)
+{
+    if(type==LINE)
+    {
+        currentLineColor=color;
+    }
+    else if(type==DRAW)
+    {
+        currentDrawColor=color;
+    }
+}
+
+void Widget::setPenWidth(int type, int width)
+{
+    width*=2;
+    if(type==LINE)
+    {
+        currentLineWidth=width;
+    }
+    else if(type==DRAW)
+    {
+        currentDrawWidth=width;
+    }
+}
+
 
 void Widget::paintEvent(QPaintEvent *event)
 {
@@ -113,7 +146,7 @@ void Widget::mousePressEvent(QMouseEvent *event)
     {
         if(son!=nullptr)
         {
-            if(son->currentChoice!=CHOICE_CURSOR)
+            if(currentChoice!=CHOICE_CURSOR)
             {
                 return;
             }
@@ -124,6 +157,8 @@ void Widget::mousePressEvent(QMouseEvent *event)
         isleft=true;
         p=event->globalPosition().toPoint();
         toolMenu->hide();
+        lineColorMenu->hide();
+        drawColorMenu->hide();
 
         QMetaObject::invokeMethod(toolMenu_item,"initCurrentState");
 
@@ -133,6 +168,8 @@ void Widget::mousePressEvent(QMouseEvent *event)
         son->move(p);
         connect(son,&CaptureRec::moveSig,[=]{
             toolMenu->hide();
+            lineColorMenu->hide();
+            drawColorMenu->hide();
             DrawRec=true;
             update();
         });
@@ -153,8 +190,26 @@ void Widget::mousePressEvent(QMouseEvent *event)
             DrawRec=true;
             update();
         });
+        connect(son,&CaptureRec::colorInterfaceSig,[=]{
+            if(currentChoice==CHOICE_CURSOR)
+            {
+                lineColorMenu->hide();
+                drawColorMenu->hide();
+            }
+            else if(currentChoice==CHOICE_LINE)
+            {
+                lineColorMenu->show();
+                drawColorMenu->hide();
+                lineColorMenu->move(toolMenu->x()-28,toolMenu->y()+toolMenu->height());
+            }
+            else if(currentChoice==CHOICE_DRAW)
+            {
+                lineColorMenu->hide();
+                drawColorMenu->show();
+                drawColorMenu->move(toolMenu->x()-63,toolMenu->y()+toolMenu->height());
+            }
+        });
         connect(toolMenu_item,SIGNAL(choiceSig(int)),son,SLOT(setCurrentChoice(int)));
-        connect(toolMenu_item,SIGNAL(pinSig()),this,SLOT(createWindow()));
 
         DrawRec=false;
         update();
@@ -200,6 +255,7 @@ void Widget::mouseReleaseEvent(QMouseEvent *event)
         toolMenu->move(son->x(),son->y()+son->height()-5-toolMenu->height());
     }
     toolMenu->show();
+
     toolMenu->raise();
 }
 
@@ -255,6 +311,11 @@ void Widget::catchZoom(bool getFullScreen)
 
 void Widget::initAll()
 {
+    currentDrawColor=QColor(Qt::red);
+    currentLineColor=QColor(Qt::red);
+    currentDrawWidth=2;
+    currentLineWidth=2;
+
     toolMenu=new QQuickWidget(this);
     toolMenu->setClearColor(Qt::transparent);
     toolMenu->setAttribute(Qt::WA_AlwaysStackOnTop);
@@ -262,6 +323,32 @@ void Widget::initAll()
     toolMenu->setSource(QUrl("qrc:/ToolMenu.qml"));
     toolMenu->hide();
     toolMenu_item=toolMenu->rootObject();
+
+    connect(toolMenu_item,SIGNAL(pinSig()),this,SLOT(createWindow()));
+
+    lineColorMenu=new QQuickWidget(this);
+    lineColorMenu->setClearColor(Qt::transparent);
+    lineColorMenu->setAttribute(Qt::WA_AlwaysStackOnTop);
+    lineColorMenu->setResizeMode(QQuickWidget::SizeViewToRootObject);
+    lineColorMenu->setSource(QUrl("qrc:/ColorSelectionInterface.qml"));
+    lineColorMenu->hide();
+    lineColorMenu_item=lineColorMenu->rootObject();
+    QMetaObject::invokeMethod(lineColorMenu_item,"setType",Q_ARG(QVariant,LINE));
+
+    connect(lineColorMenu_item,SIGNAL(colorSig(int,QColor)),this,SLOT(setPenColor(int,QColor)));
+    connect(lineColorMenu_item,SIGNAL(widthSig(int,int)),this,SLOT(setPenWidth(int,int)));
+
+    drawColorMenu=new QQuickWidget(this);
+    drawColorMenu->setClearColor(Qt::transparent);
+    drawColorMenu->setAttribute(Qt::WA_AlwaysStackOnTop);
+    drawColorMenu->setResizeMode(QQuickWidget::SizeViewToRootObject);
+    drawColorMenu->setSource(QUrl("qrc:/ColorSelectionInterface.qml"));
+    drawColorMenu->hide();
+    drawColorMenu_item=drawColorMenu->rootObject();
+    QMetaObject::invokeMethod(drawColorMenu_item,"setType",Q_ARG(QVariant,DRAW));
+
+    connect(drawColorMenu_item,SIGNAL(colorSig(int,QColor)),this,SLOT(setPenColor(int,QColor)));
+    connect(drawColorMenu_item,SIGNAL(widthSig(int,int)),this,SLOT(setPenWidth(int,int)));
 
     QMenu *systemMenu=new QMenu(this);
     QAction *action1=new QAction("截图");
