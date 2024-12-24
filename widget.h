@@ -21,6 +21,8 @@
 
 #define LINE 0
 #define DRAW 1
+#define DOWN 0
+#define UP 1
 
 
 class Widget : public QWidget

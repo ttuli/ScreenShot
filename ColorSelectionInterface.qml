@@ -13,10 +13,18 @@ Rectangle
     signal widthSig(int type,int level);
 
     property int ty: 0;
+    property int up: 1;
+    property int down: 0;
+    property int triangle_position:down;
 
     function setType(t)
     {
         ty=t;
+    }
+
+    function setPosition(p)
+    {
+        triangle_position=p;
     }
 
     Rectangle
@@ -24,8 +32,10 @@ Rectangle
         id:triangle;
         color:"white";
         anchors.horizontalCenter: parent.horizontalCenter;
-        anchors.top: parent.top;
         anchors.topMargin: 10;
+        anchors.bottomMargin: 10;
+        anchors.top:triangle_position===down?parent.top:undefined;
+        anchors.bottom: triangle_position===down?parent.bottom:undefined;
         rotation: 45;
         width: 20;
         height: 20;
@@ -36,7 +46,8 @@ Rectangle
         id:outline;
         anchors.fill: parent;
         color: "white";
-        anchors.topMargin: 20;
+        anchors.topMargin: triangle_position===down?20:0;
+        anchors.bottomMargin: triangle_position===down?0:20;
 
         property int btnWidth: 20;
         property int btnHeight: 20;

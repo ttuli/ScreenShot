@@ -43,9 +43,7 @@ void Widget::createWindow()
     w->show();
     windowList<<w;
 
-    if(son!=nullptr)
-        son->deleteLater();
-    son=nullptr;
+    son->hide();
     toolMenu->hide();
     lineColorMenu->hide();
     drawColorMenu->hide();
@@ -122,17 +120,14 @@ void Widget::contextMenuEvent(QContextMenuEvent *event)
 
     connect(action3,&QAction::triggered,[=]{
         DrawRec=false;
-        son->deleteLater();
-        son=nullptr;
+        son->hide();
         toolMenu->hide();
         QMetaObject::invokeMethod(toolMenu_item,"initCurrentState");
         update();
     });
 
     connect(action4,&QAction::triggered,[=]{
-        if(son!=nullptr)
-        son->deleteLater();
-        son=nullptr;
+        son->hide();
         toolMenu->hide();
         hide();
     });
@@ -144,75 +139,17 @@ void Widget::mousePressEvent(QMouseEvent *event)
 {
     if(event->button()==Qt::LeftButton)
     {
-        if(son!=nullptr)
-        {
-            if(currentChoice!=CHOICE_CURSOR)
-            {
-                return;
-            }
-            son->deleteLater();
-            son=nullptr;
-        }
-
+        DrawRec=false;
         isleft=true;
         p=event->globalPosition().toPoint();
+        son->show();
+        son->move(p);
         toolMenu->hide();
         lineColorMenu->hide();
         drawColorMenu->hide();
 
         QMetaObject::invokeMethod(toolMenu_item,"initCurrentState");
 
-        son=new CaptureRec(this,ScreenWidth,ScreenHeight);
-        son->setVisible(1);
-        son->resize(0,0);
-        son->move(p);
-        connect(son,&CaptureRec::moveSig,[=]{
-            toolMenu->hide();
-            lineColorMenu->hide();
-            drawColorMenu->hide();
-            DrawRec=true;
-            update();
-        });
-        connect(son,&CaptureRec::releaseSig,[=]{
-            if(son->y()+son->height()+5+toolMenu->height()<ScreenHeight)
-                toolMenu->move(son->x(),son->y()+son->height()+5);
-            else if(son->y()-5-toolMenu->height()>0)
-            {
-                toolMenu->move(son->x(),son->y()-toolMenu->height()-5);
-            }
-            else
-            {
-                toolMenu->move(son->x(),son->y()+son->height()-5-toolMenu->height());
-            }
-            toolMenu->show();
-        });
-        connect(son,&CaptureRec::updateSig,[=]{
-            DrawRec=true;
-            update();
-        });
-        connect(son,&CaptureRec::colorInterfaceSig,[=]{
-            if(currentChoice==CHOICE_CURSOR)
-            {
-                lineColorMenu->hide();
-                drawColorMenu->hide();
-            }
-            else if(currentChoice==CHOICE_LINE)
-            {
-                lineColorMenu->show();
-                drawColorMenu->hide();
-                lineColorMenu->move(toolMenu->x()-28,toolMenu->y()+toolMenu->height());
-            }
-            else if(currentChoice==CHOICE_DRAW)
-            {
-                lineColorMenu->hide();
-                drawColorMenu->show();
-                drawColorMenu->move(toolMenu->x()-63,toolMenu->y()+toolMenu->height());
-            }
-        });
-        connect(toolMenu_item,SIGNAL(choiceSig(int)),son,SLOT(setCurrentChoice(int)));
-
-        DrawRec=false;
-        update();
     }
 }
 
@@ -387,9 +324,7 @@ void Widget::initAll()
     connect(systemicon,&QSystemTrayIcon::activated,[=](QSystemTrayIcon::ActivationReason reson){
         if(reson!=QSystemTrayIcon::Trigger)return;
         DrawRec=false;
-        if(son!=nullptr)
-            son->deleteLater();
-        son=nullptr;
+        son->hide();
         initNotPaint=false;
         showFullScreen();
     });
@@ -399,6 +334,72 @@ void Widget::initAll()
     file.close();
     QSettings setting("initialFile.ini");
     fileSavePath=setting.value("path").toString();
+
+    son=new CaptureRec(this,ScreenWidth,ScreenHeight);
+    son->resize(5,5);
+    connect(son,&CaptureRec::moveSig,[=]{
+        toolMenu->hide();
+        lineColorMenu->hide();
+        drawColorMenu->hide();
+        DrawRec=true;
+        update();
+    });
+    connect(son,&CaptureRec::releaseSig,[=]{
+        if(son->y()+son->height()+5+toolMenu->height()<ScreenHeight)
+            toolMenu->move(son->x(),son->y()+son->height()+5);
+        else if(son->y()-5-toolMenu->height()>0)
+        {
+            toolMenu->move(son->x(),son->y()-toolMenu->height()-5);
+        }
+        else
+        {
+            toolMenu->move(son->x(),son->y()+son->height()-5-toolMenu->height());
+        }
+        toolMenu->show();
+    });
+    connect(son,&CaptureRec::updateSig,[=]{
+        DrawRec=true;
+        update();
+    });
+    connect(son,&CaptureRec::colorInterfaceSig,[=]{
+        if(currentChoice==CHOICE_CURSOR)
+        {
+            lineColorMenu->hide();
+            drawColorMenu->hide();
+        }
+        else if(currentChoice==CHOICE_LINE)
+        {
+            lineColorMenu->show();
+            drawColorMenu->hide();
+            if(toolMenu->y()+toolMenu->height()+lineColorMenu->height()>ScreenHeight)
+            {
+                QMetaObject::invokeMethod(lineColorMenu_item,"setPosition",Q_ARG(QVariant,UP));
+                lineColorMenu->move(toolMenu->x()-28,toolMenu->y()-lineColorMenu->height());
+            }
+            else
+            {
+                QMetaObject::invokeMethod(lineColorMenu_item,"setPosition",Q_ARG(QVariant,DOWN));
+                lineColorMenu->move(toolMenu->x()-28,toolMenu->y()+toolMenu->height());
+            }
+        }
+        else if(currentChoice==CHOICE_DRAW)
+        {
+            lineColorMenu->hide();
+            drawColorMenu->show();
+            if(toolMenu->y()+toolMenu->height()+drawColorMenu->height()>ScreenHeight)
+            {
+                QMetaObject::invokeMethod(drawColorMenu_item,"setPosition",Q_ARG(QVariant,UP));
+                drawColorMenu->move(toolMenu->x()-63,toolMenu->y()-drawColorMenu->height());
+            }
+            else
+            {
+                QMetaObject::invokeMethod(drawColorMenu_item,"setPosition",Q_ARG(QVariant,DOWN));
+                drawColorMenu->move(toolMenu->x()-63,toolMenu->y()+toolMenu->height());
+            }
+        }
+    });
+
+    connect(toolMenu_item,SIGNAL(choiceSig(int)),son,SLOT(setCurrentChoice(int)));
 
 }
 
